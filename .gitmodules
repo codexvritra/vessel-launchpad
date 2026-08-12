@@ -1,0 +1,18 @@
+[submodule "contracts/lib/openzeppelin-contracts"]
+	path = contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/lib/ERC721A"]
+	path = contracts/lib/ERC721A
+	url = https://github.com/chiru-labs/ERC721A
+[submodule "contracts/lib/reference"]
+	path = contracts/lib/reference
+	url = https://github.com/erc6551/reference
+[submodule "contracts/lib/ERC721A-Upgradeable"]
+	path = contracts/lib/ERC721A-Upgradeable
+	url = https://github.com/chiru-labs/ERC721A-Upgradeable
+[submodule "contracts/lib/v4-core"]
+	path = contracts/lib/v4-core
+	url = https://github.com/Uniswap/v4-core
+[submodule "contracts/lib/v4-periphery"]
+	path = contracts/lib/v4-periphery
+	url = https://github.com/Uniswap/v4-periphery

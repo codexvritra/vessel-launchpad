@@ -1,0 +1,52 @@
+name: contracts
+
+on:
+  push:
+    paths: ["contracts/**", ".github/workflows/contracts.yml"]
+  pull_request:
+    paths: ["contracts/**"]
+
+jobs:
+  test:
+    name: forge build + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: forge --version
+      - run: forge build --sizes
+      - run: forge test -vvv
+      - run: forge fmt --check
+
+  slither:
+    name: slither static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: crytic/slither-action@v0.4.0
+        with:
+          target: contracts/
+          slither-config: contracts/slither.config.json
+          fail-on: high
+
+  aderyn:
+    name: aderyn static analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install Aderyn
+        run: curl -L https://raw.githubusercontent.com/Cyfrin/aderyn/dev/cyfrinup/install | bash && echo "$HOME/.cyfrin/bin" >> "$GITHUB_PATH"
+      - run: aderyn . --skip-update-check

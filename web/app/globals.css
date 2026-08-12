@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@import "@rainbow-me/rainbowkit/styles.css";
+
+/* ==========================================================================
+   VESSEL — modern DeFi launchpad UI (pools.trade / Uniswap-web-app inspired).
+   Clean surfaces, rounded cards, a vivid magenta accent, crypto green/red stats,
+   tabular numerals. The class + CSS-variable API is kept stable so every screen
+   restyles from here. Original palette — not a copy of any brand's exact tokens.
+   ========================================================================== */
+
+@theme {
+  --color-paper: #131313;
+  --color-surface: #1f1f1f;
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.6);
+  --color-rule: rgba(255, 255, 255, 0.08);
+  --color-vermilion: #95d028; /* accent (Robinhood lime green) */
+  --color-teal: #21c95e; /* positive (green) */
+
+  --color-bg: var(--paper);
+  --color-fg: var(--ink);
+
+  --font-serif: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
+    monospace;
+
+  --radius-card: 20px;
+}
+
+/* Light theme (green accent kept for brand consistency) */
+:root {
+  --paper: #f7f8f5; /* page background */
+  --surface: #ffffff; /* cards */
+  --surface-2: #eef1ea; /* hover / subtle fill */
+  --ink: #0b0f07;
+  --muted: #5c6152;
+  --rule: #e3e6dd;
+  --vermilion: #5a9e12; /* accent (readable green on white) */
+  --teal: #1a9c4c; /* positive */
+  --up: #1a9c4c;
+  --down: #e0492b;
+  --shadow: rgba(16, 18, 12, 0.06);
+  --shadow-lg: rgba(16, 18, 12, 0.1);
+  --glow: rgba(90, 158, 18, 0.12);
+  color-scheme: light;
+}
+
+/* Dark theme — pools.trade / Uniswap-web-app tokens (the default). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #131313;
+    --surface: #1f1f1f;
+    --surface-2: #242424;
+    --ink: #ffffff;
+    --muted: rgba(255, 255, 255, 0.6);
+    --rule: rgba(255, 255, 255, 0.08);
+    --vermilion: #95d028;
+    --teal: #21c95e;
+    --up: #21c95e;
+    --down: #ff6640;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow-lg: rgba(0, 0, 0, 0.6);
+    --glow: rgba(149, 208, 40, 0.14);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #131313;
+  --surface: #1f1f1f;
+  --surface-2: #242424;
+  --ink: #ffffff;
+  --muted: rgba(255, 255, 255, 0.6);
+  --rule: rgba(255, 255, 255, 0.08);
+  --vermilion: #95d028;
+  --teal: #21c95e;
+  --up: #21c95e;
+  --down: #ff6640;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --shadow-lg: rgba(0, 0, 0, 0.6);
+  --glow: rgba(149, 208, 40, 0.14);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --paper: #f7f7fb;
+  --surface: #ffffff;
+  --surface-2: #f2f2f7;
+  --ink: #0b0b12;
+  --muted: #6b6b7b;
+  --rule: #ececf2;
+  --vermilion: #e5006e;
+  --teal: #12b76a;
+  --up: #12b76a;
+  --down: #f0384f;
+  --shadow: rgba(16, 18, 32, 0.06);
+  --shadow-lg: rgba(16, 18, 32, 0.1);
+  --glow: rgba(229, 0, 110, 0.12);
+  color-scheme: light;
+}
+
+* {
+  border-color: var(--rule);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Type utilities ------------------------------------------------------ */
+
+.font-serif {
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+.tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.label {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.section-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.double-rule {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.5rem;
+}
+.hairline {
+  border-color: var(--rule);
+}
+
+.accent {
+  color: var(--vermilion);
+}
+.positive {
+  color: var(--teal);
+}
+.up {
+  color: var(--up);
+}
+.down {
+  color: var(--down);
+}
+
+/* ---- Cards --------------------------------------------------------------- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px var(--shadow);
+}
+
+/* flat token/mint card — pools.trade uses a flat #1f1f1f surface, no shadow */
+.certificate {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+}
+
+/* interactive card hover — lighten surface + brighten border, no lift */
+.card-hover {
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.card-hover:hover {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ---- Tables -------------------------------------------------------------- */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ledger th {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0.75rem;
+}
+.ledger td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.6rem 0.75rem;
+}
+.ledger tbody tr:hover {
+  background: var(--surface-2);
+}
+
+/* ---- Skeleton ------------------------------------------------------------ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-card);
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ---- Buttons ------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.06s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--vermilion);
+  border-color: var(--vermilion);
+  color: #131313;
+  font-weight: 650;
+}
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--vermilion) 88%, white);
+}
+/* White pill "Buy" button, exactly like pools.trade token cards. */
+.btn-buy {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #131313;
+  font-weight: 650;
+}
+.btn-buy:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+/* ---- Inputs -------------------------------------------------------------- */
+
+.field {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+.field::placeholder {
+  color: var(--muted);
+}
+.field:focus {
+  outline: none;
+  border-color: var(--vermilion);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.field-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Chips --------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 9999px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.chip-accent {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--vermilion) 14%, transparent);
+  color: var(--vermilion);
+}
+.chip-positive {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--teal) 16%, transparent);
+  color: var(--teal);
+}
+
+/* ---- RainbowKit ---------------------------------------------------------- */
+
+[data-rk] {
+  --rk-radii-connectButton: 9999px;
+  --rk-fonts-body: var(--font-sans);
+}

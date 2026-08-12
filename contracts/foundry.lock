@@ -1,0 +1,26 @@
+{
+  "lib\\ERC721A": {
+    "tag": {
+      "name": "v4.3.0",
+      "rev": "6f8a82a7b2833ad8b2fc7b54349281143a731fdd"
+    }
+  },
+  "lib\\ERC721A-Upgradeable": {
+    "tag": {
+      "name": "v4.3.0",
+      "rev": "4508a3d65ed75ccab59e80f25571c2818c03f55b"
+    }
+  },
+  "lib\\openzeppelin-contracts": {
+    "tag": {
+      "name": "v5.1.0",
+      "rev": "69c8def5f222ff96f2b5beff05dfba996368aa79"
+    }
+  },
+  "lib\\reference": {
+    "tag": {
+      "name": "v0.3.1",
+      "rev": "43a84573bb47b0df3ab543a20365f4974f56a809"
+    }
+  }
+}

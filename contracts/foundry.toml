@@ -1,0 +1,26 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.26"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+via_ir = false
+fs_permissions = [{ access = "read", path = "./" }]
+ffi = false
+
+# Robinhood Chain (Arbitrum-stack L2). Set RPC via env for fork tests.
+# The canonical ERC-6551 registry is deterministic across EVM chains.
+[rpc_endpoints]
+robinhood = "${ROBINHOOD_RPC_URL}"
+robinhood_testnet = "${ROBINHOOD_TESTNET_RPC_URL}"
+
+[etherscan]
+robinhood = { key = "${EXPLORER_API_KEY}", url = "${EXPLORER_API_URL}" }
+
+[fmt]
+line_length = 110
+tab_width = 4
+bracket_spacing = false
+int_types = "long"

@@ -1,0 +1,35 @@
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/.gas-snapshot
+
+# Node
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Ponder
+indexer/.ponder/
+indexer/generated/
+
+# Next.js
+web/.next/
+web/out/
+web/.vercel/
+
+# Env / secrets
+.env
+.env.local
+**/.env
+!**/.env.example
+
+# Editor / OS
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Slither generated report
+contracts/slither-report.txt
+contracts/crytic-export/
