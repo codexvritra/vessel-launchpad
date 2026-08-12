@@ -33,3 +33,7 @@ web/.vercel/
 # Slither generated report
 contracts/slither-report.txt
 contracts/crytic-export/
+
+# TS build cache
+web/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
