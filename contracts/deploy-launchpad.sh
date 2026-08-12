@@ -39,7 +39,7 @@ if [[ -n "${DEPLOYER_ACCOUNT:-}" ]]; then
   DEPLOYER_ADDR="$(cast wallet address --account "$DEPLOYER_ACCOUNT")"
 else
   echo "No DEPLOYER_ACCOUNT set. Paste your deployer private key (input hidden)."
-  read -r -s -p "PRIVATE KEY: " PK; echo
+  read -r -s -p "PRIVATE KEY: " PK </dev/tty; echo
   [[ -n "${PK:-}" ]] || { echo "ERROR: no key entered."; exit 1; }
   SIGNER_ARGS=(--private-key "$PK")
   DEPLOYER_ADDR="$(cast wallet address --private-key "$PK")"
@@ -64,8 +64,15 @@ fi
 echo ""
 echo "This broadcasts real transactions to MAINNET with real ETH. The contracts"
 echo "are unaudited. Proceed only if you accept that risk."
-read -r -p "Type 'DEPLOY MAINNET' to continue: " CONFIRM
-[[ "$CONFIRM" == "DEPLOY MAINNET" ]] || { echo "Aborted."; exit 1; }
+CONFIRM=""
+while [[ -z "$CONFIRM" ]]; do
+  read -r -p "Type 'DEPLOY MAINNET' to continue (Ctrl+C to abort): " CONFIRM </dev/tty || true
+  CONFIRM="${CONFIRM%$'\r'}"                                            # strip Windows CR
+  CONFIRM="$(printf '%s' "$CONFIRM" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+done
+if [[ "$CONFIRM" != "DEPLOY MAINNET" ]]; then
+  echo "Aborted (you typed: '$CONFIRM')."; exit 1
+fi
 
 # ---- record the start block for the indexer ---------------------------------
 START_BLOCK="$(cast block-number --rpc-url "$RPC")"
