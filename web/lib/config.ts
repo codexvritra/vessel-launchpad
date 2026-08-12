@@ -47,37 +47,51 @@ export const API_URL = (
 export const WC_PROJECT_ID =
   process.env.NEXT_PUBLIC_WC_PROJECT_ID?.trim() || "wallet_placeholder_project_id";
 
+// Deployed on Robinhood Chain mainnet (chain 4663, block 34671304). Baked in as
+// defaults so the app is functional with no env vars; override per-environment
+// with the matching NEXT_PUBLIC_* variable.
+const DEPLOYED = {
+  factory: "0xe9f3c226eb834f57cac14e63a4f9f63f68dcccce",
+  tokenLauncher: "0xb43f644d78e230bde09217c83e15175c3cefe48e",
+  guard: "0xfcaedb4b770ab46ce316138f08e20c71a40e534b",
+  feeSplitter: "0x9c38ef1f37574d658a15865128945b8621291e86",
+  coinFactory: "0x50f14380495989353865bda4da9df2e7a38fe292",
+  marketDeployer: "0x600803023700743b7a697ed3909c58598de763cb",
+  liquidityLauncher: "0xae1da370c817d10ca2a3da913a6abc3ed87756e5",
+  bondingCurve: "0x515402397d263a42d3053c0b3c4bbd2c1aa27587",
+} as const;
+
 export const FACTORY_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_FACTORY,
-  zeroAddress,
+  getAddress(DEPLOYED.factory),
 );
 export const GUARD_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_GUARD,
-  zeroAddress,
+  getAddress(DEPLOYED.guard),
 );
 export const FEE_SPLITTER_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_FEE_SPLITTER,
-  zeroAddress,
+  getAddress(DEPLOYED.feeSplitter),
 );
 export const COIN_FACTORY_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_COIN_FACTORY,
-  zeroAddress,
+  getAddress(DEPLOYED.coinFactory),
 );
 export const MARKET_DEPLOYER_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_MARKET_DEPLOYER,
-  zeroAddress,
+  getAddress(DEPLOYED.marketDeployer),
 );
 export const LIQUIDITY_LAUNCHER_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_LIQUIDITY_LAUNCHER,
-  zeroAddress,
+  getAddress(DEPLOYED.liquidityLauncher),
 );
 export const BONDING_CURVE_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_BONDING_CURVE,
-  zeroAddress,
+  getAddress(DEPLOYED.bondingCurve),
 );
 export const TOKEN_LAUNCHER_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_TOKEN_LAUNCHER,
-  zeroAddress,
+  getAddress(DEPLOYED.tokenLauncher),
 );
 /** Base URL for a DexScreener token page, for direct-to-DEX launched tokens. */
 export const DEXSCREENER_URL = (
