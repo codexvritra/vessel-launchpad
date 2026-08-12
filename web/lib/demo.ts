@@ -30,7 +30,7 @@ export const DEMO_TOKENS: DisplayToken[] = [
   { address: "0xB0a7f1e0000000000000000000000000000f0009", name: "PixelApe", symbol: "PXAPE", ageLabel: "7d", ageMinutes: 10080, fdvUsd: 206322, changePct: -7.49, volumeUsd: 96051, holders: 1941, graduationPct: 100 },
   { address: "0xB0a7f1e000000000000000000000000000f00010", name: "RoboSeal", symbol: "SEAL", ageLabel: "4d", ageMinutes: 5760, fdvUsd: 223341, changePct: -33.57, volumeUsd: 192717, holders: 1396, graduationPct: 100 },
   { address: "0xB0a7f1e000000000000000000000000000f00011", name: "NanoWhale", symbol: "WHALE", ageLabel: "29m", ageMinutes: 29, fdvUsd: 88997, changePct: 6.4, volumeUsd: 42778, holders: 221, graduationPct: 38 },
-  { address: "0xB0a7f1e000000000000000000000000000f00012", name: "Vessel", symbol: "VSSL", ageLabel: "2h", ageMinutes: 120, fdvUsd: 311000, changePct: 0.0, volumeUsd: 51120, holders: 402, graduationPct: 61 },
+  { address: "0xB0a7f1e000000000000000000000000000f00012", name: "Signapad", symbol: "VSSL", ageLabel: "2h", ageMinutes: 120, fdvUsd: 311000, changePct: 0.0, volumeUsd: 51120, holders: 402, graduationPct: 61 },
   { address: "0xB0a7f1e000000000000000000000000000f00013", name: "SolarNwt", symbol: "SOLN", ageLabel: "9d", ageMinutes: 12960, fdvUsd: 142880, changePct: 12.7, volumeUsd: 88400, holders: 611, graduationPct: 100 },
   { address: "0xB0a7f1e000000000000000000000000000f00014", name: "GigaMoth", symbol: "MOTH", ageLabel: "5h", ageMinutes: 300, fdvUsd: 77420, changePct: -4.2, volumeUsd: 30110, holders: 188, graduationPct: 44 },
   { address: "0xB0a7f1e000000000000000000000000000f00015", name: "CandleWick", symbol: "WICK", ageLabel: "2d", ageMinutes: 2880, fdvUsd: 265900, changePct: 27.9, volumeUsd: 176300, holders: 980, graduationPct: 100 },

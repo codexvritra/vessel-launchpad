@@ -5,14 +5,14 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Vessel — every NFT is a funded wallet",
+  title: "Signapad — every NFT is a funded wallet",
   description:
     "A permissionless NFT launchpad where every token owns an ERC-6551 account funded at mint. The NFT is a wallet with assets inside it.",
 };
 
 // Set the theme attribute before paint to avoid a flash of the wrong theme.
 // Default to dark (pools.trade-style) unless the user has explicitly chosen light.
-const themeInitScript = `(function(){try{var m=localStorage.getItem('vessel-theme');var t=(m==='light'||m==='dark')?m:'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+const themeInitScript = `(function(){try{var m=localStorage.getItem('wallet-theme');var t=(m==='light'||m==='dark')?m:'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
 
 export default function RootLayout({
   children,

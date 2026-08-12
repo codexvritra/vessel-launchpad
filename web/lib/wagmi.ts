@@ -15,7 +15,7 @@ import { RPC_URL, WC_PROJECT_ID, WS_RPC_URL } from "./config";
  */
 let cached: ReturnType<typeof getDefaultConfig> | ReturnType<typeof createConfig> | null = null;
 
-const PLACEHOLDER = "vessel_placeholder_project_id";
+const PLACEHOLDER = "wallet_placeholder_project_id";
 
 export function getWagmiConfig() {
   if (cached) return cached;
@@ -28,7 +28,7 @@ export function getWagmiConfig() {
 
   if (hasRealWc) {
     cached = getDefaultConfig({
-      appName: "Vessel",
+      appName: "Signapad",
       projectId: WC_PROJECT_ID,
       chains: [robinhoodChain],
       transports: { [robinhoodChain.id]: transport },
@@ -38,7 +38,7 @@ export function getWagmiConfig() {
     // Browser-wallet only — no WalletConnect dependency.
     const connectors = connectorsForWallets(
       [{ groupName: "Browser wallet", wallets: [injectedWallet] }],
-      { appName: "Vessel", projectId: PLACEHOLDER },
+      { appName: "Signapad", projectId: PLACEHOLDER },
     );
     cached = createConfig({
       chains: [robinhoodChain],

@@ -2,7 +2,7 @@ import { defineChain } from "viem";
 import { CHAIN_ID, RPC_URL } from "./config";
 
 /**
- * "Robinhood Chain" — the Vessel deployment target (Arbitrum-Orbit L2). Defined
+ * "Robinhood Chain" — the Signapad deployment target (Arbitrum-Orbit L2). Defined
  * from env so a local anvil node (31337), the testnet (46630), or mainnet (4663)
  * works without code changes. Testnet explorer is Blockscout-style.
  */

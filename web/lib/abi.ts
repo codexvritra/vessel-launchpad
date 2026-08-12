@@ -1,5 +1,5 @@
 /**
- * viem `as const` ABIs for the three Vessel contracts the frontend touches.
+ * viem `as const` ABIs for the three Signapad contracts the frontend touches.
  * Keeping them minimal (only the members the UI calls) keeps type inference
  * fast and intent obvious.
  */

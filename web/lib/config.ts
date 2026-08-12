@@ -35,7 +35,7 @@ export const RPC_URL = (
  */
 export const WS_RPC_URL = process.env.NEXT_PUBLIC_WS_RPC_URL?.trim() || "";
 
-/** Base URL of the Vessel services layer (metadata, auth, allowlist proofs). */
+/** Base URL of the Signapad services layer (metadata, auth, allowlist proofs). */
 export const SERVICES_URL = (
   process.env.NEXT_PUBLIC_SERVICES_URL || "http://localhost:8080"
 ).replace(/\/$/, "");
@@ -45,7 +45,7 @@ export const API_URL = (
 ).replace(/\/$/, "");
 
 export const WC_PROJECT_ID =
-  process.env.NEXT_PUBLIC_WC_PROJECT_ID?.trim() || "vessel_placeholder_project_id";
+  process.env.NEXT_PUBLIC_WC_PROJECT_ID?.trim() || "wallet_placeholder_project_id";
 
 export const FACTORY_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_FACTORY,

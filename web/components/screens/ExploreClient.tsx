@@ -17,7 +17,7 @@ import {
 import { TokenLogo } from "@/components/ui";
 
 // Local-only preview switch. Off by default: the site shows ONLY tokens launched
-// on Vessel (from the indexer). Set NEXT_PUBLIC_SHOW_DEMO=1 to preview the
+// on Signapad (from the indexer). Set NEXT_PUBLIC_SHOW_DEMO=1 to preview the
 // populated layout without a running chain/indexer.
 const SHOW_DEMO = process.env.NEXT_PUBLIC_SHOW_DEMO === "1";
 
@@ -150,7 +150,7 @@ function Hero() {
         A new way to launch and trade tokens.
       </h1>
       <p className="mt-2 text-sm text-[var(--muted)] sm:text-base">
-        Built by <span className="font-semibold text-[var(--ink)]">Vessel</span>{" "}
+        Built by <span className="font-semibold text-[var(--ink)]">Signapad</span>{" "}
         for{" "}
         <span className="font-semibold text-[var(--ink)]">Robinhood Chain</span>.
       </p>
@@ -169,9 +169,9 @@ function Hero() {
 function EmptyLaunchState({ loading }: { loading: boolean }) {
   return (
     <section className="certificate flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <TokenLogo symbol="V" seed="vessel-empty" className="h-14 w-14 text-xl" />
+      <TokenLogo symbol="S" seed="signapad-empty" className="h-14 w-14 text-xl" />
       <h2 className="text-lg font-semibold text-[var(--ink)]">
-        {loading ? "Loading launches…" : "No tokens launched on Vessel yet"}
+        {loading ? "Loading launches…" : "No tokens launched on Signapad yet"}
       </h2>
       <p className="max-w-sm text-sm text-[var(--muted)]">
         This board only lists tokens launched here. Be the first — deploy a token

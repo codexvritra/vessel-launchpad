@@ -60,7 +60,7 @@ const STEPS = [
   "Artwork & identity",
   "Supply & economics",
   "Mint phases",
-  "Vessel funding",
+  "Signapad funding",
   "Review & deploy",
 ] as const;
 
@@ -403,7 +403,7 @@ function StepArtwork({
         <Field label="Collection name" required>
           <input
             className="field"
-            placeholder="Almanac Vessels"
+            placeholder="Almanac Signapads"
             value={form.name}
             onChange={(e) => set("name", e.target.value)}
           />
@@ -422,7 +422,7 @@ function StepArtwork({
         <textarea
           className="field"
           rows={3}
-          placeholder="A limited register of funded vessels…"
+          placeholder="A limited register of funded wallets…"
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
         />
@@ -722,9 +722,9 @@ function StepFunding({
   const pct = Number(form.tbaFundingPct) || 0;
   return (
     <div className="space-y-5">
-      <Heading n={4} title="Vessel funding" />
+      <Heading n={4} title="Signapad funding" />
       <p className="text-sm text-[var(--muted)]">
-        This is what makes a Vessel a Vessel. A share of every mint payment is
+        This is what makes a Signapad a Signapad. A share of every mint payment is
         deposited straight into the new token&apos;s ERC-6551 account.
       </p>
 
@@ -967,7 +967,7 @@ function PreviewPanel({
             />
           ) : (
             <ArtMark
-              seed={form.symbol || form.name || "vessel"}
+              seed={form.symbol || form.name || "wallet"}
               label={form.symbol || "VSSL"}
               className="h-40 w-full"
             />

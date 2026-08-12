@@ -1,7 +1,7 @@
 import { API_URL, SERVICES_URL } from "./config";
 
 /**
- * Typed client for the Vessel indexer (Ponder + Hono) REST API and the services
+ * Typed client for the Signapad indexer (Ponder + Hono) REST API and the services
  * layer. Every call is wrapped in try/catch and returns an empty-but-valid
  * default, so the UI never throws during SSR/build when a backend is unreachable.
  *

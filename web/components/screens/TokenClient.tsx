@@ -56,7 +56,7 @@ export function TokenClient({
 
   return (
     <div>
-      <SectionHeader kicker="Token-bound account" title={`Vessel #${tokenId}`} />
+      <SectionHeader kicker="Token-bound account" title={`Signapad #${tokenId}`} />
 
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
         <Link
@@ -90,7 +90,7 @@ export function TokenClient({
                   <span className="text-[var(--muted)]">—</span>
                 )}
               </KV>
-              <KV k="Vessel (TBA)">
+              <KV k="Signapad (TBA)">
                 <span className="tnum text-[var(--muted)]">
                   {token?.tba ? shortAddress(token.tba) : "not deployed"}
                 </span>
@@ -119,7 +119,7 @@ export function TokenClient({
                 </p>
               </div>
               <div className="hidden sm:block text-right">
-                <div className="label">Vessel address</div>
+                <div className="label">Signapad address</div>
                 <div className="tnum text-sm">
                   {token?.tba ? shortAddress(token.tba, 6) : "—"}
                 </div>
@@ -146,7 +146,7 @@ function Holdings({
   if (holdings.length === 0) {
     return (
       <EmptyState
-        title="This vessel is empty"
+        title="This wallet is empty"
         hint="No assets are currently held in the token-bound account, or the indexer hasn't observed any yet."
       />
     );
@@ -154,7 +154,7 @@ function Holdings({
   return (
     <div className="panel overflow-hidden">
       <div className="border-b border-[var(--ink)] p-3">
-        <span className="label">Contents of the vessel</span>
+        <span className="label">Contents of the wallet</span>
       </div>
       <div className="overflow-x-auto">
         <table className="ledger text-sm">
@@ -223,7 +223,7 @@ function History({
       {events.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">
           No balance changes recorded yet. Deposits and withdrawals to this
-          vessel will appear here.{" "}
+          wallet will appear here.{" "}
           <span className="italic">
             (TODO: full transfer history via the indexer / websocket feed.)
           </span>

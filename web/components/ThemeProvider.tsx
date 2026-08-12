@@ -26,7 +26,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggle: () => {},
 });
 
-const STORAGE_KEY = "vessel-theme";
+const STORAGE_KEY = "wallet-theme";
 
 function systemPrefersDark(): boolean {
   if (typeof window === "undefined") return false;

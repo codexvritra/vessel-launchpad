@@ -38,7 +38,7 @@ export function Header() {
             }}
           />
           <span className="text-xl font-bold tracking-tight text-[var(--ink)]">
-            Vessel
+            Signapad
           </span>
           <span className="chip hidden sm:inline">Beta</span>
         </Link>

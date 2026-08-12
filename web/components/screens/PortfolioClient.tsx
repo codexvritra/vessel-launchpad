@@ -47,10 +47,10 @@ export function PortfolioClient({ address }: { address: string }) {
   const holdings = data?.holdings ?? [];
   const totalUsd = sumUsd(holdings);
 
-  // Group holdings by their token reference for per-vessel subtotals.
+  // Group holdings by their token reference for per-wallet subtotals.
   const byToken = useMemo(() => groupByToken(holdings), [holdings]);
 
-  // Aggregate the same asset across every vessel.
+  // Aggregate the same asset across every wallet.
   const byAsset = useMemo(() => groupByAsset(holdings), [holdings]);
 
   return (
@@ -64,7 +64,7 @@ export function PortfolioClient({ address }: { address: string }) {
         </div>
         <p className="mt-2 text-sm text-[var(--muted)]">
           across{" "}
-          <span className="tnum">{tokens.length}</span> vessel
+          <span className="tnum">{tokens.length}</span> wallet
           {tokens.length === 1 ? "" : "s"} for {shortAddress(addr, 6)}
           {dataUpdatedAt ? (
             <>
@@ -79,7 +79,7 @@ export function PortfolioClient({ address }: { address: string }) {
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="panel p-4">
-          <Stat label="Vessels" value={tokens.length} />
+          <Stat label="Signapads" value={tokens.length} />
         </div>
         <div className="panel p-4">
           <Stat label="Distinct assets" value={byAsset.length} />
@@ -98,7 +98,7 @@ export function PortfolioClient({ address }: { address: string }) {
 
       {/* Aggregate asset breakdown */}
       <div className="mt-10">
-        <SectionHeader kicker="Composition" title="Assets across all vessels" />
+        <SectionHeader kicker="Composition" title="Assets across all wallets" />
         {isLoading ? (
           <Skeleton className="h-32" />
         ) : byAsset.length === 0 ? (
@@ -139,9 +139,9 @@ export function PortfolioClient({ address }: { address: string }) {
         )}
       </div>
 
-      {/* Per-vessel grid */}
+      {/* Per-wallet grid */}
       <div className="mt-10">
-        <SectionHeader kicker="Holdings" title="Your vessels" />
+        <SectionHeader kicker="Holdings" title="Your wallets" />
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -150,7 +150,7 @@ export function PortfolioClient({ address }: { address: string }) {
           </div>
         ) : tokens.length === 0 ? (
           <EmptyState
-            title="You don't hold any vessels yet"
+            title="You don't hold any wallets yet"
             hint="Mint from a collection to receive a token that holds its own funded wallet."
             action={
               <Link href="/" className="btn btn-primary">
@@ -161,7 +161,7 @@ export function PortfolioClient({ address }: { address: string }) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tokens.map((t) => (
-              <VesselCard
+              <SignapadCard
                 key={t.id}
                 token={t}
                 holdings={byToken.get(t.id) ?? []}
@@ -174,7 +174,7 @@ export function PortfolioClient({ address }: { address: string }) {
   );
 }
 
-function VesselCard({
+function SignapadCard({
   token,
   holdings,
 }: {
@@ -203,7 +203,7 @@ function VesselCard({
         </div>
         <ul className="mt-auto space-y-1 border-t border-[var(--rule)] pt-2 text-sm">
           {holdings.length === 0 ? (
-            <li className="text-[var(--muted)]">empty vessel</li>
+            <li className="text-[var(--muted)]">empty wallet</li>
           ) : (
             holdings.slice(0, 3).map((h) => (
               <li key={h.id} className="flex items-center justify-between">

@@ -153,7 +153,7 @@ export function ProfileClient({ address }: { address: string }) {
                 <tr>
                   <th className="label">Collection</th>
                   <th className="label">Token</th>
-                  <th className="label">Vessel</th>
+                  <th className="label">Signapad</th>
                   <th />
                 </tr>
               </thead>

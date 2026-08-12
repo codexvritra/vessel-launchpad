@@ -375,7 +375,7 @@ function MintWidget({
           <Line k="Total" v={`${formatEther(value)} Ξ`} strong />
           {perTokenFunding > 0n ? (
             <Line
-              k="Funded into each vessel"
+              k="Funded into each wallet"
               v={`${formatEther(perTokenFunding)} Ξ`}
               accent
             />
@@ -536,7 +536,7 @@ function HolderList({
     return (
       <EmptyState
         title="No tokens indexed yet"
-        hint="Once the first token mints, holders and their vessels appear here."
+        hint="Once the first token mints, holders and their wallets appear here."
       />
     );
   }
@@ -551,7 +551,7 @@ function HolderList({
             <tr>
               <th className="label">Token</th>
               <th className="label">Owner</th>
-              <th className="label">Vessel (TBA)</th>
+              <th className="label">Signapad (TBA)</th>
               <th />
             </tr>
           </thead>
