@@ -1,5 +1,5 @@
 {
-  "name": "vessel-services",
+  "name": "signapad-services",
   "private": true,
   "type": "module",
   "scripts": {

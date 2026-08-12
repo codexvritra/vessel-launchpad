@@ -2,7 +2,7 @@ import { ipfsToHttp } from "./ipfs.js";
 import { priceHoldings } from "./pricing.js";
 
 // Metadata service. EIP-7572 contract-level metadata + per-token metadata. The
-// per-token document is where Vessel's differentiator surfaces: the NFT's
+// per-token document is where Signapad's differentiator surfaces: the NFT's
 // token-bound-account holdings are folded in as attributes with a live USD total,
 // so any marketplace that reads tokenURI shows "this NFT holds $X".
 
@@ -23,10 +23,10 @@ export async function contractMetadata(collection: string) {
   const data = await indexer<{ metrics: any }>(`/collections/${collection}`);
   const m = data?.metrics;
   return {
-    name: m?.name ?? "Vessel Collection",
+    name: m?.name ?? "Signapad Collection",
     symbol: m?.symbol ?? "VSSL",
     description:
-      "A Vessel collection. Every token owns an ERC-6551 account funded at mint — an NFT that is also a wallet.",
+      "A Signapad collection. Every token owns an ERC-6551 account funded at mint — an NFT that is also a wallet.",
     image: MEDIA_BASE ? ipfsToHttp(`${MEDIA_BASE}/cover.png`) : undefined,
     // EIP-7572 extras
     collaborators: m?.creator ? [m.creator] : [],
@@ -56,8 +56,8 @@ export async function tokenMetadata(collection: string, tokenId: string) {
   }
 
   return {
-    name: `Vessel #${tokenId}`,
-    description: "A token-bound NFT wallet on Vessel.",
+    name: `Signapad #${tokenId}`,
+    description: "A token-bound NFT wallet on Signapad.",
     image: MEDIA_BASE ? ipfsToHttp(`${MEDIA_BASE}/${tokenId}.png`) : undefined,
     external_url: `${process.env.APP_ORIGIN ?? "http://localhost:3000"}/token/${collection}/${tokenId}`,
     attributes,
