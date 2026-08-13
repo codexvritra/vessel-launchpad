@@ -12,6 +12,7 @@ import {
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { collectionFactoryAbi } from "@/lib/abi";
 import { FACTORY_ADDRESS, isConfigured } from "@/lib/config";
+import { UPLOAD_ENABLED, uploadCollectionImage } from "@/lib/upload";
 import { SectionHeader, ArtMark } from "@/components/ui";
 
 /**
@@ -30,7 +31,10 @@ export function QuickLaunchClient() {
   const [price, setPrice] = useState("0.001");
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState("");
+  const [metadataUri, setMetadataUri] = useState("");
   const [artPreview, setArtPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
 
   const factoryReady = isConfigured(FACTORY_ADDRESS);
 
@@ -50,9 +54,25 @@ export function QuickLaunchClient() {
 
   const valid = name.trim().length > 0 && symbol.trim().length > 0 && Number(maxSupply) > 0;
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
-    if (f) setArtPreview(URL.createObjectURL(f));
+    if (!f) return;
+    setArtPreview(URL.createObjectURL(f));
+    setUploadErr(null);
+    if (!UPLOAD_ENABLED) return; // preview only; paste a link in the field below
+    try {
+      setUploading(true);
+      const { imageUri: img, metadataUri: md } = await uploadCollectionImage(f, {
+        name,
+        description,
+      });
+      setImageUri(img);
+      setMetadataUri(md);
+    } catch (err) {
+      setUploadErr(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
   function deploy() {
@@ -84,7 +104,7 @@ export function QuickLaunchClient() {
       address: FACTORY_ADDRESS,
       abi: collectionFactoryAbi,
       functionName: "createCollection",
-      args: [config, "", imageUri.trim(), false],
+      args: [config, "", (metadataUri || imageUri).trim(), false],
       value: fee,
     });
   }
@@ -114,14 +134,29 @@ export function QuickLaunchClient() {
             )}
           </div>
           <div className="flex-1">
-            <div className="label mb-1">Collection art</div>
+            <div className="label mb-1">Collection image</div>
             <input type="file" accept="image/*" className="field" onChange={onFile} />
-            <input
-              className="field field-mono mt-2"
-              placeholder="metadata / image URI (ipfs://… or https://…)"
-              value={imageUri}
-              onChange={(e) => setImageUri(e.target.value)}
-            />
+            {UPLOAD_ENABLED ? (
+              uploading ? (
+                <p className="mt-1 text-xs text-[var(--muted)]">Uploading to IPFS…</p>
+              ) : imageUri ? (
+                <p className="mt-1 text-xs text-[var(--teal)]">Image uploaded ✓</p>
+              ) : (
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  Pick an image — it&apos;s uploaded automatically.
+                </p>
+              )
+            ) : (
+              <input
+                className="field field-mono mt-2"
+                placeholder="…or paste an image link (https:// or ipfs://)"
+                value={imageUri}
+                onChange={(e) => setImageUri(e.target.value)}
+              />
+            )}
+            {uploadErr ? (
+              <p className="mt-1 text-xs text-[var(--vermilion)]">{uploadErr}</p>
+            ) : null}
           </div>
         </div>
 
@@ -195,7 +230,7 @@ export function QuickLaunchClient() {
         ) : (
           <button
             className="btn btn-primary w-full"
-            disabled={!valid || isPending || isConfirming}
+            disabled={!valid || isPending || isConfirming || uploading}
             onClick={deploy}
           >
             {isPending
