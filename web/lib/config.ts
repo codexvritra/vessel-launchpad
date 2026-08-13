@@ -59,7 +59,14 @@ const DEPLOYED = {
   marketDeployer: "0x600803023700743b7a697ed3909c58598de763cb",
   liquidityLauncher: "0xae1da370c817d10ca2a3da913a6abc3ed87756e5",
   bondingCurve: "0x515402397d263a42d3053c0b3c4bbd2c1aa27587",
+  bcnftFactory: "0xa83ecec0ebab517bf47da015a621a7cb0c6a27c4",
 } as const;
+
+/** Bonding-curve NFT launchpad factory (buy = mint at rising price, sell = burn). */
+export const BCNFT_FACTORY_ADDRESS = readAddress(
+  process.env.NEXT_PUBLIC_BCNFT_FACTORY,
+  getAddress(DEPLOYED.bcnftFactory),
+);
 
 export const FACTORY_ADDRESS = readAddress(
   process.env.NEXT_PUBLIC_FACTORY,

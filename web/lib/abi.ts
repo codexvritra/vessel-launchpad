@@ -400,6 +400,69 @@ export const tokenLauncherAbi = [
   },
 ] as const;
 
+// Bonding-curve NFT launchpad — factory.
+export const bcnftFactoryAbi = [
+  {
+    type: "function",
+    name: "launch",
+    stateMutability: "payable",
+    inputs: [
+      { name: "name_", type: "string" },
+      { name: "symbol_", type: "string" },
+      { name: "basePrice_", type: "uint256" },
+      { name: "slope_", type: "uint256" },
+      { name: "maxSupply_", type: "uint256" },
+      { name: "uri_", type: "string" },
+    ],
+    outputs: [{ name: "collection", type: "address" }],
+  },
+  { type: "function", name: "launchFeeWei", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "isCollection", stateMutability: "view", inputs: [{ name: "", type: "address" }], outputs: [{ name: "", type: "bool" }] },
+  {
+    type: "event",
+    name: "Launched",
+    inputs: [
+      { name: "collection", type: "address", indexed: true },
+      { name: "creator", type: "address", indexed: true },
+      { name: "name", type: "string", indexed: false },
+      { name: "symbol", type: "string", indexed: false },
+      { name: "basePrice", type: "uint256", indexed: false },
+      { name: "slope", type: "uint256", indexed: false },
+      { name: "maxSupply", type: "uint256", indexed: false },
+    ],
+  },
+] as const;
+
+// Bonding-curve NFT collection — buy (mint at rising price) / sell (burn for current price).
+export const bondingCurveNftAbi = [
+  { type: "function", name: "buy", stateMutability: "payable", inputs: [{ name: "quantity", type: "uint256" }], outputs: [] },
+  { type: "function", name: "sell", stateMutability: "nonpayable", inputs: [{ name: "tokenIds", type: "uint256[]" }], outputs: [] },
+  { type: "function", name: "buyQuote", stateMutability: "view", inputs: [{ name: "q", type: "uint256" }], outputs: [{ name: "total", type: "uint256" }] },
+  { type: "function", name: "sellQuote", stateMutability: "view", inputs: [{ name: "q", type: "uint256" }], outputs: [{ name: "net", type: "uint256" }] },
+  { type: "function", name: "buyCost", stateMutability: "view", inputs: [{ name: "q", type: "uint256" }], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "sellProceeds", stateMutability: "view", inputs: [{ name: "q", type: "uint256" }], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "totalSupply", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "maxSupply", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "basePrice", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "slope", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "reserve", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "feeBps", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint16" }] },
+  { type: "function", name: "creator", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "address" }] },
+  { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "owner", type: "address" }], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "contractURI", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
+  { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
+  { type: "function", name: "symbol", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
+  {
+    type: "event",
+    name: "Transfer",
+    inputs: [
+      { name: "from", type: "address", indexed: true },
+      { name: "to", type: "address", indexed: true },
+      { name: "tokenId", type: "uint256", indexed: true },
+    ],
+  },
+] as const;
+
 // Minimal ERC-20 for a launch token (balance + approve for selling).
 export const erc20Abi = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "", type: "address" }], outputs: [{ name: "", type: "uint256" }] },
