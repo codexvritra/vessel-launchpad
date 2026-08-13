@@ -2,13 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ThemeToggle } from "./ThemeToggle";
 
-/** Minimal pools.trade-style header: logo · centered search · Launch · Connect. */
+const NAV = [
+  { href: "/", label: "Explore" },
+  { href: "/launch", label: "Launch" },
+];
+
 export function Header() {
+  const pathname = usePathname();
   const router = useRouter();
+  const { address } = useAccount();
   const [q, setQ] = useState("");
 
   function onSearch(e: React.FormEvent) {
@@ -17,8 +24,12 @@ export function Header() {
     if (/^0x[0-9a-fA-F]{40}$/.test(v)) router.push(`/collection/${v}`);
   }
 
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  }
+
   return (
-    <header className="sticky top-0 z-40 bg-[var(--paper)]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[var(--rule)] bg-[var(--paper)]/80 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <span
@@ -34,7 +45,39 @@ export function Header() {
           <span className="chip hidden sm:inline">Beta</span>
         </Link>
 
-        <form onSubmit={onSearch} className="mx-auto hidden w-full max-w-md md:block">
+        <nav className="ml-3 hidden items-center gap-1 lg:flex">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                color: isActive(item.href) ? "var(--vermilion)" : "var(--ink)",
+                background: isActive(item.href) ? "var(--surface-2)" : "transparent",
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+          {address ? (
+            <Link
+              href={`/portfolio/${address}`}
+              className="rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                color: pathname.startsWith("/portfolio")
+                  ? "var(--vermilion)"
+                  : "var(--ink)",
+                background: pathname.startsWith("/portfolio")
+                  ? "var(--surface-2)"
+                  : "transparent",
+              }}
+            >
+              My NFTs
+            </Link>
+          ) : null}
+        </nav>
+
+        <form onSubmit={onSearch} className="mx-auto hidden w-full max-w-sm md:block">
           <input
             className="field"
             style={{ borderRadius: 9999, background: "var(--surface)" }}
