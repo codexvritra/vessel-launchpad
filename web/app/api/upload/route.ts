@@ -2,45 +2,28 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-// Server-side image upload → IPFS via Pinata. The key stays on the server
-// (set PINATA_JWT in the environment — NOT NEXT_PUBLIC, so it's never shipped to
-// the browser). Pins the image, then a small metadata JSON, and returns both URIs.
-const PINATA_JWT = (process.env.PINATA_JWT || "").trim();
-
-async function pinFile(file: File): Promise<string> {
+/**
+ * Server-side image upload — zero configuration. The image is uploaded to a free,
+ * keyless public file host; the collection's metadata (name/description/image) is
+ * returned as a small data: URI so it can be stored on-chain directly (cheap on an
+ * L2). No API keys, no accounts — people just upload and launch.
+ */
+async function hostImage(file: File): Promise<string> {
   const body = new FormData();
-  body.append("file", file);
-  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+  body.append("reqtype", "fileupload");
+  body.append("fileToUpload", file, file.name || "image");
+  const res = await fetch("https://catbox.moe/user/api.php", {
     method: "POST",
-    headers: { Authorization: `Bearer ${PINATA_JWT}` },
     body,
   });
-  if (!res.ok) throw new Error(`image pin failed (${res.status})`);
-  const data = (await res.json()) as { IpfsHash: string };
-  return `ipfs://${data.IpfsHash}`;
-}
-
-async function pinJson(obj: unknown): Promise<string> {
-  const res = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${PINATA_JWT}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ pinataContent: obj }),
-  });
-  if (!res.ok) throw new Error(`metadata pin failed (${res.status})`);
-  const data = (await res.json()) as { IpfsHash: string };
-  return `ipfs://${data.IpfsHash}`;
+  const text = (await res.text()).trim();
+  if (!res.ok || !/^https?:\/\//.test(text)) {
+    throw new Error(text || `upload failed (${res.status})`);
+  }
+  return text;
 }
 
 export async function POST(req: Request) {
-  if (!PINATA_JWT) {
-    return NextResponse.json(
-      { error: "Image upload isn't set up yet (missing PINATA_JWT)." },
-      { status: 501 },
-    );
-  }
   try {
     const form = await req.formData();
     const file = form.get("file");
@@ -49,11 +32,13 @@ export async function POST(req: Request) {
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "Image too large (max 10MB)." }, { status: 413 });
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json({ error: "Image too large (max 50MB)." }, { status: 413 });
     }
-    const imageUri = await pinFile(file);
-    const metadataUri = await pinJson({ name, description, image: imageUri });
+
+    const imageUri = await hostImage(file);
+    const metaJson = JSON.stringify({ name, description, image: imageUri });
+    const metadataUri = `data:application/json;base64,${Buffer.from(metaJson).toString("base64")}`;
     return NextResponse.json({ imageUri, metadataUri });
   } catch (err) {
     return NextResponse.json(
