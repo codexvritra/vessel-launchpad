@@ -1,7 +1,6 @@
-import { CreateClient } from "@/components/screens/CreateClient";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+// The advanced builder was removed — Signapad is a single, simple NFT launchpad.
 export default function CreatePage() {
-  return <CreateClient />;
+  redirect("/launch");
 }

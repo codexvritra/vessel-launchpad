@@ -1,7 +1,6 @@
-import { TokenExplorerClient } from "@/components/screens/TokenExplorerClient";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+// The token launchpad was removed — Signapad is NFT-only.
 export default function TokensPage() {
-  return <TokenExplorerClient />;
+  redirect("/");
 }

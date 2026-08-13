@@ -1,12 +1,6 @@
-import { TokenTradeClient } from "@/components/screens/TokenTradeClient";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function TokenPage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
-  const { token } = await params;
-  return <TokenTradeClient token={token} />;
+// The token launchpad/trade view was removed — Signapad is NFT-only.
+export default function TokenRedirect() {
+  redirect("/");
 }

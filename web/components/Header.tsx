@@ -9,9 +9,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/", label: "Explore" },
-  { href: "/t", label: "Tokens" },
-  { href: "/launch", label: "NFT Launch" },
-  { href: "/create", label: "Advanced" },
+  { href: "/launch", label: "Launch NFT" },
 ];
 
 export function Header() {
@@ -23,7 +21,7 @@ export function Header() {
   function onSearch(e: React.FormEvent) {
     e.preventDefault();
     const v = q.trim();
-    if (/^0x[0-9a-fA-F]{40}$/.test(v)) router.push(`/t/${v}`);
+    if (/^0x[0-9a-fA-F]{40}$/.test(v)) router.push(`/collection/${v}`);
   }
 
   return (
@@ -88,15 +86,15 @@ export function Header() {
               background: "var(--surface)",
               borderColor: "var(--rule)",
             }}
-            placeholder="Search tokens"
+            placeholder="Search collections"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
         </form>
 
         <div className="ml-auto flex items-center gap-2 md:ml-3">
-          <Link href="/t" className="btn btn-primary hidden sm:inline-flex" style={{ padding: "0.5rem 1rem" }}>
-            Launch
+          <Link href="/launch" className="btn btn-primary hidden sm:inline-flex" style={{ padding: "0.5rem 1rem" }}>
+            Launch NFT
           </Link>
           <ThemeToggle />
           <ConnectButton

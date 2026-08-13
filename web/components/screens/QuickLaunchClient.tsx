@@ -245,12 +245,8 @@ export function QuickLaunchClient() {
         {error ? <p className="text-xs text-[var(--vermilion)]">{error.message.split("\n")[0]}</p> : null}
 
         <p className="border-t border-[var(--rule)] pt-3 text-xs text-[var(--muted)]">
-          Plain art collection · one public mint phase · a shareable mint page is created
-          automatically. Need funded wallets, allowlists, phases, or a SushiSwap coin
-          market? Use the{" "}
-          <Link href="/create" className="text-[var(--vermilion)]">
-            full builder →
-          </Link>
+          One public mint phase · a shareable mint page is created automatically,
+          so anyone can mint your supply.
         </p>
       </div>
     </div>
