@@ -76,6 +76,9 @@ export function BuySellClient({ address }: { address: string }) {
             <Stat label="Max" value={maxSupply === 0n ? "∞" : maxSupply.toString()} />
             <Stat label="Reserve" value={`${trim(reserve)} Ξ`} />
           </div>
+
+          <Position collection={coll} account={account} client={client} />
+
           <p className="text-sm text-[var(--muted)]">
             Every buy mints at the current price and pushes it up; every sell burns a
             token back at the current price. Early buyers profit as the price climbs.
@@ -268,6 +271,100 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 function trim(wei: bigint): string {
   const n = Number(formatEther(wei));
   return n.toLocaleString("en-US", { maximumFractionDigits: 5 });
+}
+
+/** "Your position" P&L box: holdings, net invested, sell-value now, and P&L. */
+function Position({
+  collection,
+  account,
+  client,
+}: {
+  collection: Address;
+  account?: Address;
+  client: ReturnType<typeof usePublicClient>;
+}) {
+  const [paid, setPaid] = useState(0n);
+  const [received, setReceived] = useState(0n);
+
+  const { data: balData } = useReadContract({
+    address: collection,
+    abi: bondingCurveNftAbi,
+    functionName: "balanceOf",
+    args: account ? [account] : undefined,
+    query: { enabled: !!account, refetchInterval: 8000 },
+  });
+  const holdings = (balData as bigint | undefined) ?? 0n;
+
+  const { data: sellVal } = useReadContract({
+    address: collection,
+    abi: bondingCurveNftAbi,
+    functionName: "sellQuote",
+    args: [holdings],
+    query: { enabled: holdings > 0n, refetchInterval: 8000 },
+  });
+  const currentValue = (sellVal as bigint | undefined) ?? 0n;
+
+  useEffect(() => {
+    let cancelled = false;
+    const boughtEv = bondingCurveNftAbi.find((x) => x.type === "event" && x.name === "Bought");
+    const soldEv = bondingCurveNftAbi.find((x) => x.type === "event" && x.name === "Sold");
+    async function load() {
+      if (!client || !account) return;
+      try {
+        const latest = await client.getBlockNumber();
+        const from = latest > 1_000_000n ? latest - 1_000_000n : 0n;
+        const [bought, sold] = await Promise.all([
+          client.getLogs({ address: collection, event: boughtEv as never, args: { buyer: account } as never, fromBlock: from, toBlock: "latest" }),
+          client.getLogs({ address: collection, event: soldEv as never, args: { seller: account } as never, fromBlock: from, toBlock: "latest" }),
+        ]);
+        let p = 0n;
+        let r = 0n;
+        for (const l of bought as unknown as Array<{ args: { cost: bigint; fee: bigint } }>) p += l.args.cost + l.args.fee;
+        for (const l of sold as unknown as Array<{ args: { proceeds: bigint; fee: bigint } }>) r += l.args.proceeds - l.args.fee;
+        if (!cancelled) {
+          setPaid(p);
+          setReceived(r);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    void load();
+    const t = setInterval(() => void load(), 10_000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [client, account, collection]);
+
+  if (!account || (holdings === 0n && paid === 0n)) return null;
+
+  // P&L if you sold everything now: what you'd get + what you already took out − what you put in.
+  const pnl = currentValue + received - paid;
+  const up = pnl >= 0n;
+  const pct = paid > 0n ? (Number(pnl) / Number(paid)) * 100 : 0;
+  const netInvested = paid > received ? paid - received : 0n;
+
+  return (
+    <div className="certificate p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="label">Your position</span>
+        <span className={`tnum text-sm font-semibold ${up ? "up" : "down"}`}>
+          {up ? "+" : "−"}
+          {trim(pnl < 0n ? -pnl : pnl)} Ξ {paid > 0n ? `(${up ? "+" : ""}${pct.toFixed(1)}%)` : ""}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-3 border-t border-[var(--rule)] pt-3 text-sm">
+        <Stat label="Your NFTs" value={holdings.toString()} />
+        <Stat label="Invested" value={`${trim(netInvested)} Ξ`} />
+        <Stat label="Sell value" value={`${trim(currentValue)} Ξ`} />
+      </div>
+      <p className="mt-2 text-xs text-[var(--muted)]">
+        P&amp;L if you sold your {holdings.toString()} NFT{holdings === 1n ? "" : "s"} now
+        (includes anything you&apos;ve already sold).
+      </p>
+    </div>
+  );
 }
 
 type Trade = { kind: "buy" | "sell"; trader: Address; qty: bigint; eth: bigint; block: bigint; idx: number; ts: number };
