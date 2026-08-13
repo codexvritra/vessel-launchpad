@@ -135,24 +135,41 @@ export function QuickLaunchClient() {
           </div>
           <div className="flex-1">
             <div className="label mb-1">Collection image</div>
-            <input type="file" accept="image/*" className="field" onChange={onFile} />
             {UPLOAD_ENABLED ? (
-              uploading ? (
-                <p className="mt-1 text-xs text-[var(--muted)]">Uploading to IPFS…</p>
-              ) : imageUri ? (
-                <p className="mt-1 text-xs text-[var(--teal)]">Image uploaded ✓</p>
-              ) : (
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  Pick an image — it&apos;s uploaded automatically.
-                </p>
-              )
+              <>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="field"
+                  onChange={onFile}
+                />
+                {uploading ? (
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    Uploading to IPFS…
+                  </p>
+                ) : imageUri ? (
+                  <p className="mt-1 text-xs text-[var(--teal)]">
+                    Image uploaded ✓
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    Pick a file — it&apos;s uploaded automatically.
+                  </p>
+                )}
+              </>
             ) : (
-              <input
-                className="field field-mono mt-2"
-                placeholder="…or paste an image link (https:// or ipfs://)"
-                value={imageUri}
-                onChange={(e) => setImageUri(e.target.value)}
-              />
+              <>
+                <input
+                  className="field field-mono"
+                  placeholder="Image URL (https:// or ipfs://)"
+                  value={imageUri}
+                  onChange={(e) => setImageUri(e.target.value)}
+                />
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  Paste a link to your art. Direct file upload turns on once an
+                  IPFS (Pinata) key is added.
+                </p>
+              </>
             )}
             {uploadErr ? (
               <p className="mt-1 text-xs text-[var(--vermilion)]">{uploadErr}</p>
