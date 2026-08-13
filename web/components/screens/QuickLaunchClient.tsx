@@ -12,7 +12,7 @@ import {
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { collectionFactoryAbi } from "@/lib/abi";
 import { FACTORY_ADDRESS, isConfigured } from "@/lib/config";
-import { UPLOAD_ENABLED, uploadCollectionImage } from "@/lib/upload";
+import { uploadCollectionImage } from "@/lib/upload";
 import { SectionHeader, ArtMark } from "@/components/ui";
 
 /**
@@ -59,7 +59,6 @@ export function QuickLaunchClient() {
     if (!f) return;
     setArtPreview(URL.createObjectURL(f));
     setUploadErr(null);
-    if (!UPLOAD_ENABLED) return; // preview only; paste a link in the field below
     try {
       setUploading(true);
       const { imageUri: img, metadataUri: md } = await uploadCollectionImage(f, {
@@ -135,41 +134,20 @@ export function QuickLaunchClient() {
           </div>
           <div className="flex-1">
             <div className="label mb-1">Collection image</div>
-            {UPLOAD_ENABLED ? (
-              <>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="field"
-                  onChange={onFile}
-                />
-                {uploading ? (
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    Uploading to IPFS…
-                  </p>
-                ) : imageUri ? (
-                  <p className="mt-1 text-xs text-[var(--teal)]">
-                    Image uploaded ✓
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    Pick a file — it&apos;s uploaded automatically.
-                  </p>
-                )}
-              </>
+            <input
+              type="file"
+              accept="image/*"
+              className="field"
+              onChange={onFile}
+            />
+            {uploading ? (
+              <p className="mt-1 text-xs text-[var(--muted)]">Uploading…</p>
+            ) : imageUri ? (
+              <p className="mt-1 text-xs text-[var(--teal)]">Image uploaded ✓</p>
             ) : (
-              <>
-                <input
-                  className="field field-mono"
-                  placeholder="Image URL (https:// or ipfs://)"
-                  value={imageUri}
-                  onChange={(e) => setImageUri(e.target.value)}
-                />
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  Paste a link to your art. Direct file upload turns on once an
-                  IPFS (Pinata) key is added.
-                </p>
-              </>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Choose an image file — it&apos;s uploaded automatically.
+              </p>
             )}
             {uploadErr ? (
               <p className="mt-1 text-xs text-[var(--vermilion)]">{uploadErr}</p>

@@ -1,13 +1,9 @@
 /**
- * Client-side image upload to IPFS via Pinata. Enable it by setting
- * NEXT_PUBLIC_PINATA_JWT (a free scoped JWT from https://app.pinata.cloud →
- * API Keys). Without it, upload is disabled and the launch form falls back to a
- * plain "image link" field. Uploads the image, then pins a small metadata JSON
- * so the collection has a proper tokenURI.
+ * Client helper: uploads the chosen image through our own server route
+ * (/api/upload), which pins it to IPFS via Pinata using a server-side key.
+ * The browser never sees the key. Returns the image URI and a pinned metadata
+ * URI (name/description/image) to use as the collection's contractURI.
  */
-
-const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT?.trim() || "";
-export const UPLOAD_ENABLED = PINATA_JWT.length > 0;
 
 /** Public gateway for showing an ipfs:// URI as an <img> src. */
 export function ipfsToHttp(uri: string): string {
@@ -18,47 +14,19 @@ export function ipfsToHttp(uri: string): string {
   return uri;
 }
 
-async function pinFile(file: File): Promise<string> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${PINATA_JWT}` },
-    body: form,
-  });
-  if (!res.ok) throw new Error(`Pin failed (${res.status})`);
-  const data = (await res.json()) as { IpfsHash: string };
-  return `ipfs://${data.IpfsHash}`;
-}
-
-async function pinJson(obj: unknown): Promise<string> {
-  const res = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${PINATA_JWT}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ pinataContent: obj }),
-  });
-  if (!res.ok) throw new Error(`Pin failed (${res.status})`);
-  const data = (await res.json()) as { IpfsHash: string };
-  return `ipfs://${data.IpfsHash}`;
-}
-
-/**
- * Upload an image and return both the raw image URI (for preview) and a pinned
- * metadata JSON URI (name/description/image) suitable for contractURI.
- */
 export async function uploadCollectionImage(
   file: File,
   meta: { name: string; description?: string },
 ): Promise<{ imageUri: string; metadataUri: string }> {
-  if (!UPLOAD_ENABLED) throw new Error("Image upload is not configured");
-  const imageUri = await pinFile(file);
-  const metadataUri = await pinJson({
-    name: meta.name || "Collection",
-    description: meta.description || "",
-    image: imageUri,
-  });
-  return { imageUri, metadataUri };
+  const form = new FormData();
+  form.append("file", file);
+  form.append("name", meta.name || "Collection");
+  form.append("description", meta.description || "");
+
+  const res = await fetch("/api/upload", { method: "POST", body: form });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(detail.error || `Upload failed (${res.status})`);
+  }
+  return (await res.json()) as { imageUri: string; metadataUri: string };
 }
