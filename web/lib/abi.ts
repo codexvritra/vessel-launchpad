@@ -418,6 +418,8 @@ export const bcnftFactoryAbi = [
   },
   { type: "function", name: "launchFeeWei", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
   { type: "function", name: "isCollection", stateMutability: "view", inputs: [{ name: "", type: "address" }], outputs: [{ name: "", type: "bool" }] },
+  { type: "function", name: "collectionsCount", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
+  { type: "function", name: "allCollections", stateMutability: "view", inputs: [{ name: "", type: "uint256" }], outputs: [{ name: "", type: "address" }] },
   {
     type: "event",
     name: "Launched",

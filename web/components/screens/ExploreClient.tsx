@@ -1,246 +1,137 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import type { TrendingRow } from "@/lib/api";
-import { useTrending } from "@/lib/hooks";
-import { useWatchNewCollections } from "@/lib/realtime";
-import { formatInt, shortAddress } from "@/lib/format";
-import { ArtMark, TokenLogo } from "@/components/ui";
+import { useMemo } from "react";
+import { formatEther, type Address } from "viem";
+import { useReadContract, useReadContracts } from "wagmi";
+import { bcnftFactoryAbi, bondingCurveNftAbi } from "@/lib/abi";
+import { BCNFT_FACTORY_ADDRESS, isConfigured } from "@/lib/config";
+import { shortAddress } from "@/lib/format";
+import { ArtMark } from "@/components/ui";
 
-type DisplayCollection = {
-  address: string;
-  name: string;
-  symbol: string;
-  ageLabel: string;
-  ageMinutes: number;
-  minted: number;
-  supply: number;
-  floorEth: number;
-  holders: number;
-};
+type Row = { address: Address; name: string; symbol: string; supply: bigint; price: bigint };
 
-type Tab = "trending" | "new" | "top";
-const TABS: { key: Tab; label: string }[] = [
-  { key: "trending", label: "Trending" },
-  { key: "new", label: "New" },
-  { key: "top", label: "Top" },
-];
-
-function rowToCollection(r: TrendingRow): DisplayCollection {
-  return {
-    address: r.collection,
-    name: r.name || shortAddress(r.collection),
-    symbol: r.symbol || "NFT",
-    ageLabel: "live",
-    ageMinutes: 0,
-    minted: Number(r.total_minted ?? 0),
-    supply: 0,
-    floorEth: Number(r.floor_eth ?? 0),
-    holders: Number(r.holder_count ?? 0),
-  };
-}
-
-function sortBy(list: DisplayCollection[], tab: Tab): DisplayCollection[] {
-  const t = [...list];
-  if (tab === "new") return t.sort((a, b) => a.ageMinutes - b.ageMinutes);
-  if (tab === "top") return t.sort((a, b) => b.holders - a.holders);
-  return t.sort((a, b) => b.minted - a.minted);
-}
-
+/** Explore board — reads every bonding-curve collection straight from the
+ *  factory on-chain (no indexer needed). */
 export function ExploreClient() {
-  useWatchNewCollections();
-  const { data, isLoading } = useTrending(undefined);
-  const [tab, setTab] = useState<Tab>("trending");
+  const ready = isConfigured(BCNFT_FACTORY_ADDRESS);
 
-  const list = useMemo(() => (data ?? []).map(rowToCollection), [data]);
-  const hasData = list.length > 0;
+  const { data: countData } = useReadContract({
+    address: BCNFT_FACTORY_ADDRESS,
+    abi: bcnftFactoryAbi,
+    functionName: "collectionsCount",
+    query: { enabled: ready, refetchInterval: 15_000 },
+  });
+  const count = Number((countData as bigint | undefined) ?? 0n);
 
-  const top = useMemo(
-    () => [...list].sort((a, b) => b.holders - a.holders).slice(0, 6),
-    [list],
+  const { data: addrData } = useReadContracts({
+    contracts: Array.from({ length: count }).map((_, i) => ({
+      address: BCNFT_FACTORY_ADDRESS,
+      abi: bcnftFactoryAbi,
+      functionName: "allCollections",
+      args: [BigInt(i)],
+    })),
+    query: { enabled: ready && count > 0 },
+  });
+
+  const addresses = useMemo(
+    () =>
+      ((addrData ?? [])
+        .map((d) => d.result as unknown as Address)
+        .filter(Boolean) as Address[]).reverse(),
+    [addrData],
   );
-  const grid = useMemo(() => sortBy(list, tab), [list, tab]);
+
+  const { data: statData } = useReadContracts({
+    contracts: addresses.flatMap((a) => [
+      { address: a, abi: bondingCurveNftAbi, functionName: "name" },
+      { address: a, abi: bondingCurveNftAbi, functionName: "symbol" },
+      { address: a, abi: bondingCurveNftAbi, functionName: "totalSupply" },
+      { address: a, abi: bondingCurveNftAbi, functionName: "buyQuote", args: [1n] },
+    ]),
+    query: { enabled: addresses.length > 0, refetchInterval: 12_000 },
+  });
+
+  const rows: Row[] = useMemo(() => {
+    if (!statData) return [];
+    return addresses.map((a, i) => {
+      const b = i * 4;
+      return {
+        address: a,
+        name: (statData[b]?.result as string) || shortAddress(a),
+        symbol: (statData[b + 1]?.result as string) || "NFT",
+        supply: (statData[b + 2]?.result as bigint) ?? 0n,
+        price: (statData[b + 3]?.result as bigint) ?? 0n,
+      };
+    });
+  }, [addresses, statData]);
 
   return (
     <div>
       <section className="flex flex-col gap-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:py-14">
         <div className="max-w-xl">
           <h1 className="text-2xl font-semibold leading-tight text-[var(--ink)] sm:text-[30px]">
-            A new way to launch and mint NFTs.
+            Launch and trade NFTs on a bonding curve.
           </h1>
           <p className="mt-2 text-[var(--muted)] sm:text-lg">
-            Built by <span className="font-semibold text-[var(--ink)]">Signapad</span>{" "}
-            for{" "}
-            <span className="font-semibold text-[var(--ink)]">Robinhood Chain</span>.
+            Buy mints at a rising price, sell burns for the current price — early
+            buyers profit as demand climbs.
           </p>
         </div>
-        <Link
-          href="/launch"
-          className="btn btn-primary self-start text-base sm:self-auto"
-          style={{ padding: "0.75rem 1.5rem" }}
-        >
+        <Link href="/launch" className="btn btn-primary self-start text-base sm:self-auto" style={{ padding: "0.75rem 1.5rem" }}>
           Launch an NFT
         </Link>
       </section>
 
-      {!hasData ? (
-        <EmptyState loading={isLoading} />
-      ) : (
-        <>
-          <section className="mb-10">
-            <h2 className="mb-3 text-lg font-semibold text-[var(--ink)]">
-              Top collections
-            </h2>
-            <div
-              className="flex gap-3 overflow-x-auto pb-2"
-              style={{ scrollbarWidth: "thin", scrollSnapType: "x proximity" }}
-            >
-              {top.map((c) => (
-                <ShelfCard key={c.address} c={c} />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <h2 className="mr-2 text-lg font-semibold text-[var(--ink)]">
-                All launches
-              </h2>
-              {TABS.map((tb) => {
-                const active = tb.key === tab;
-                return (
-                  <button
-                    key={tb.key}
-                    onClick={() => setTab(tb.key)}
-                    className="btn"
-                    style={{
-                      padding: "0.4rem 0.9rem",
-                      fontSize: "0.85rem",
-                      background: active ? "var(--surface-2)" : "transparent",
-                      borderColor: active
-                        ? "color-mix(in srgb, var(--vermilion) 45%, var(--rule))"
-                        : "var(--rule)",
-                      color: active ? "var(--vermilion)" : "var(--muted)",
-                    }}
-                  >
-                    {tb.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {grid.map((c) => (
-                <ArtCard key={c.address} c={c} />
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-[var(--ink)]">All collections</h2>
+        {count === 0 || rows.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {rows.map((r) => (
+              <Card key={r.address} r={r} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function EmptyState({ loading }: { loading: boolean }) {
+function EmptyState() {
   return (
     <section className="certificate flex flex-col items-center gap-3 px-6 py-20 text-center">
-      <TokenLogo symbol="S" seed="signapad-empty" className="h-14 w-14 text-xl" />
-      <h2 className="text-lg font-semibold text-[var(--ink)]">
-        {loading ? "Loading collections…" : "No collections launched yet"}
-      </h2>
+      <ArtMark seed="signapad" label="S" className="h-14 w-14 rounded-full" />
+      <h2 className="text-lg font-semibold text-[var(--ink)]">No collections launched yet</h2>
       <p className="max-w-sm text-sm text-[var(--muted)]">
-        Be the first — launch an NFT collection in a few seconds. It appears here
-        once the indexer picks it up.
+        Be the first — launch a bonding-curve NFT and it shows up here instantly.
       </p>
-      <Link href="/launch" className="btn btn-primary">
-        Launch an NFT
-      </Link>
+      <Link href="/launch" className="btn btn-primary">Launch an NFT</Link>
     </section>
   );
 }
 
-function floor(n: number): string {
-  return n > 0 ? n.toFixed(2) : "—";
-}
-
-function ShelfCard({ c }: { c: DisplayCollection }) {
+function Card({ r }: { r: Row }) {
   return (
-    <Link
-      href={`/collection/${c.address}`}
-      className="certificate card-hover flex w-[330px] shrink-0 overflow-hidden"
-      style={{ scrollSnapAlign: "start" }}
-    >
-      <div className="relative h-28 w-28 shrink-0">
-        <ArtMark seed={c.address} className="h-full w-full" />
-        <span
-          className="chip absolute left-1.5 top-1.5"
-          style={{ fontSize: "0.6rem", padding: "0.1rem 0.4rem" }}
-        >
-          {c.ageLabel}
-        </span>
-      </div>
-      <div className="flex flex-1 flex-col justify-center gap-1.5 p-3">
-        <div className="truncate font-semibold text-[var(--ink)]">{c.name}</div>
-        <div className="flex items-baseline gap-1">
-          <span className="tnum text-lg font-bold text-[var(--ink)]">
-            {floor(c.floorEth)}
-          </span>
-          <span className="text-xs text-[var(--muted)]">Ξ floor</span>
-        </div>
-        <div className="flex justify-between text-xs text-[var(--muted)]">
-          <span className="tnum">
-            {formatInt(c.minted)}
-            {c.supply ? `/${formatInt(c.supply)}` : ""} minted
-          </span>
-          <span className="tnum">{formatInt(c.holders)} holders</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function ArtCard({ c }: { c: DisplayCollection }) {
-  const pct = c.supply ? Math.min(100, (c.minted / c.supply) * 100) : 0;
-  return (
-    <Link
-      href={`/collection/${c.address}`}
-      className="certificate card-hover overflow-hidden"
-    >
+    <Link href={`/c/${r.address}`} className="certificate card-hover overflow-hidden">
       <div className="relative aspect-square">
-        <ArtMark seed={c.address} label={c.symbol} className="h-full w-full" />
-        <span
-          className="chip absolute left-2 top-2"
-          style={{ fontSize: "0.6rem", padding: "0.1rem 0.4rem" }}
-        >
-          {c.ageLabel}
-        </span>
+        <ArtMark seed={r.address} label={r.symbol} className="h-full w-full" />
         <div
           className="absolute inset-x-0 bottom-0 p-2.5"
-          style={{
-            background: "linear-gradient(to top, rgba(0,0,0,0.88), transparent)",
-          }}
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88), transparent)" }}
         >
-          <div className="truncate text-sm font-semibold text-white">
-            {c.name}
-          </div>
+          <div className="truncate text-sm font-semibold text-white">{r.name}</div>
           <div className="mt-0.5 flex items-center justify-between text-xs text-white/80">
-            <span className="tnum">
-              {formatInt(c.minted)}
-              {c.supply ? `/${formatInt(c.supply)}` : ""}
-            </span>
-            <span className="tnum">{floor(c.floorEth)} Ξ</span>
+            <span className="tnum">{r.supply.toString()} minted</span>
+            <span className="tnum">{fmt(r.price)} Ξ</span>
           </div>
-          {c.supply ? (
-            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full"
-                style={{ width: `${pct}%`, background: "var(--vermilion)" }}
-              />
-            </div>
-          ) : null}
         </div>
       </div>
     </Link>
   );
+}
+
+function fmt(wei: bigint): string {
+  return Number(formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: 5 });
 }

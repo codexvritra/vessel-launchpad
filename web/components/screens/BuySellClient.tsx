@@ -14,7 +14,7 @@ import {
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { bondingCurveNftAbi } from "@/lib/abi";
 import { normalizeAddress, shortAddress } from "@/lib/format";
-import { AddressTag, ArtMark, EmptyState, SectionHeader } from "@/components/ui";
+import { AddressTag, EmptyState, SectionHeader } from "@/components/ui";
 
 /** Trade a bonding-curve NFT collection: buy mints at the rising price, sell burns
  *  owned tokens for the current price. */
@@ -32,6 +32,8 @@ export function BuySellClient({ address }: { address: string }) {
       { ...base, functionName: "maxSupply" },
       { ...base, functionName: "reserve" },
       { ...base, functionName: "buyQuote", args: [1n] },
+      { ...base, functionName: "basePrice" },
+      { ...base, functionName: "slope" },
     ],
     query: { enabled: !!coll, refetchInterval: 8000 },
   });
@@ -42,6 +44,8 @@ export function BuySellClient({ address }: { address: string }) {
   const maxSupply = (data?.[3]?.result as bigint | undefined) ?? 0n;
   const reserve = (data?.[4]?.result as bigint | undefined) ?? 0n;
   const price = (data?.[5]?.result as bigint | undefined) ?? 0n; // current buy price incl fee
+  const basePrice = (data?.[6]?.result as bigint | undefined) ?? 0n;
+  const slope = (data?.[7]?.result as bigint | undefined) ?? 0n;
 
   if (!coll) {
     return (
@@ -65,9 +69,7 @@ export function BuySellClient({ address }: { address: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
-          <div className="certificate overflow-hidden">
-            <ArtMark seed={coll} label={symbol} className="aspect-[3/1] w-full" />
-          </div>
+          <PriceChart basePrice={basePrice} slope={slope} supply={supply} maxSupply={maxSupply} />
           <div className="panel grid grid-cols-2 gap-4 p-5 sm:grid-cols-4">
             <Stat label="Price" value={`${trim(price)} Ξ`} />
             <Stat label="Minted" value={supply.toString()} />
@@ -264,4 +266,63 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 function trim(wei: bigint): string {
   const n = Number(formatEther(wei));
   return n.toLocaleString("en-US", { maximumFractionDigits: 5 });
+}
+
+/** SVG of the linear bonding curve (price vs supply) with the current point marked. */
+function PriceChart({
+  basePrice,
+  slope,
+  supply,
+  maxSupply,
+}: {
+  basePrice: bigint;
+  slope: bigint;
+  supply: bigint;
+  maxSupply: bigint;
+}) {
+  const bp = Number(formatEther(basePrice));
+  const sl = Number(formatEther(slope));
+  const cur = Number(supply);
+  const sMax = maxSupply > 0n ? Number(maxSupply) : Math.max(cur + 20, 20);
+  const W = 600;
+  const H = 200;
+  const priceAt = (s: number) => bp + sl * s;
+  const yMax = priceAt(sMax) || 1;
+  const x = (s: number) => (s / sMax) * W;
+  const y = (s: number) => H - (priceAt(s) / yMax) * (H - 12) - 6;
+
+  const N = 60;
+  const line: string[] = [];
+  for (let i = 0; i <= N; i++) {
+    const s = (i / N) * sMax;
+    line.push(`${x(s).toFixed(1)},${y(s).toFixed(1)}`);
+  }
+  // Filled area up to the current supply.
+  const fill: string[] = [`0,${H}`];
+  const M = Math.max(1, Math.round((cur / sMax) * N));
+  for (let i = 0; i <= M; i++) {
+    const s = (i / N) * sMax;
+    fill.push(`${x(s).toFixed(1)},${y(s).toFixed(1)}`);
+  }
+  fill.push(`${x(cur).toFixed(1)},${H}`);
+
+  return (
+    <div className="panel p-4">
+      <div className="label mb-2">Bonding curve · price vs supply</div>
+      <svg viewBox="0 0 600 200" className="h-48 w-full" preserveAspectRatio="none">
+        <polygon points={fill.join(" ")} fill="var(--glow)" stroke="none" />
+        <polyline points={line.join(" ")} fill="none" stroke="var(--vermilion)" strokeWidth="2" />
+        <line x1={x(cur)} y1="0" x2={x(cur)} y2={H} stroke="var(--rule)" strokeDasharray="4" />
+        <circle cx={x(cur)} cy={y(cur)} r="4.5" fill="var(--vermilion)" />
+      </svg>
+      <div className="mt-1 flex justify-between text-xs text-[var(--muted)]">
+        <span className="tnum">{trim(basePrice)} Ξ</span>
+        <span className="tnum">
+          supply {cur}
+          {maxSupply > 0n ? ` / ${sMax}` : ""}
+        </span>
+        <span className="tnum">{yMax.toLocaleString("en-US", { maximumFractionDigits: 5 })} Ξ</span>
+      </div>
+    </div>
+  );
 }
