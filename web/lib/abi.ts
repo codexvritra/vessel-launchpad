@@ -463,6 +463,28 @@ export const bondingCurveNftAbi = [
       { name: "tokenId", type: "uint256", indexed: true },
     ],
   },
+  {
+    type: "event",
+    name: "Bought",
+    inputs: [
+      { name: "buyer", type: "address", indexed: true },
+      { name: "quantity", type: "uint256", indexed: false },
+      { name: "cost", type: "uint256", indexed: false },
+      { name: "fee", type: "uint256", indexed: false },
+      { name: "supply", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "Sold",
+    inputs: [
+      { name: "seller", type: "address", indexed: true },
+      { name: "quantity", type: "uint256", indexed: false },
+      { name: "proceeds", type: "uint256", indexed: false },
+      { name: "fee", type: "uint256", indexed: false },
+      { name: "supply", type: "uint256", indexed: false },
+    ],
+  },
 ] as const;
 
 // Minimal ERC-20 for a launch token (balance + approve for selling).

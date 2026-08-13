@@ -81,6 +81,8 @@ export function BuySellClient({ address }: { address: string }) {
             token back at the current price. Early buyers profit as the price climbs.
             1% fee on each trade.
           </p>
+
+          <TradeHistory collection={coll} client={client} />
         </div>
 
         <TradePanel
@@ -266,6 +268,134 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 function trim(wei: bigint): string {
   const n = Number(formatEther(wei));
   return n.toLocaleString("en-US", { maximumFractionDigits: 5 });
+}
+
+type Trade = { kind: "buy" | "sell"; trader: Address; qty: bigint; eth: bigint; block: bigint; idx: number; ts: number };
+
+/** Live feed of recent buys and sells, polled from the collection's events. */
+function TradeHistory({
+  collection,
+  client,
+}: {
+  collection: Address;
+  client: ReturnType<typeof usePublicClient>;
+}) {
+  const [rows, setRows] = useState<Trade[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const boughtEv = bondingCurveNftAbi.find((x) => x.type === "event" && x.name === "Bought");
+    const soldEv = bondingCurveNftAbi.find((x) => x.type === "event" && x.name === "Sold");
+
+    async function load() {
+      if (!client) return;
+      try {
+        const latest = await client.getBlockNumber();
+        const from = latest > 1_000_000n ? latest - 1_000_000n : 0n;
+        const [bought, sold] = await Promise.all([
+          client.getLogs({ address: collection, event: boughtEv as never, fromBlock: from, toBlock: "latest" }),
+          client.getLogs({ address: collection, event: soldEv as never, fromBlock: from, toBlock: "latest" }),
+        ]);
+
+        const items: Trade[] = [
+          ...(bought as unknown as Array<{ args: { buyer: Address; quantity: bigint; cost: bigint; fee: bigint }; blockNumber: bigint; logIndex: number }>).map((l) => ({
+            kind: "buy" as const,
+            trader: l.args.buyer,
+            qty: l.args.quantity,
+            eth: l.args.cost + l.args.fee,
+            block: l.blockNumber,
+            idx: l.logIndex,
+            ts: 0,
+          })),
+          ...(sold as unknown as Array<{ args: { seller: Address; quantity: bigint; proceeds: bigint; fee: bigint }; blockNumber: bigint; logIndex: number }>).map((l) => ({
+            kind: "sell" as const,
+            trader: l.args.seller,
+            qty: l.args.quantity,
+            eth: l.args.proceeds - l.args.fee,
+            block: l.blockNumber,
+            idx: l.logIndex,
+            ts: 0,
+          })),
+        ]
+          .sort((a, b) => (a.block === b.block ? b.idx - a.idx : a.block < b.block ? 1 : -1))
+          .slice(0, 15);
+
+        const blocks = [...new Set(items.map((i) => i.block))];
+        const times = new Map<bigint, number>();
+        await Promise.all(
+          blocks.map(async (bn) => {
+            try {
+              const blk = await client.getBlock({ blockNumber: bn });
+              times.set(bn, Number(blk.timestamp));
+            } catch {
+              /* ignore */
+            }
+          }),
+        );
+        const withTime = items.map((i) => ({ ...i, ts: times.get(i.block) ?? 0 }));
+        if (!cancelled) setRows(withTime);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    void load();
+    const t = setInterval(() => void load(), 8000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [client, collection]);
+
+  return (
+    <div className="panel overflow-hidden">
+      <div className="border-b border-[var(--rule)] p-3">
+        <span className="label">Trade history · live</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="p-4 text-sm text-[var(--muted)]">No trades yet — be the first to buy.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="ledger text-sm">
+            <thead>
+              <tr>
+                <th className="label">Type</th>
+                <th className="label">Trader</th>
+                <th className="label">Qty</th>
+                <th className="label">ETH</th>
+                <th className="label">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={`${r.block}-${r.idx}`}>
+                  <td>
+                    <span className={r.kind === "buy" ? "up" : "down"} style={{ fontWeight: 600 }}>
+                      {r.kind === "buy" ? "Buy" : "Sell"}
+                    </span>
+                  </td>
+                  <td>
+                    <AddressTag address={r.trader} short={shortAddress(r.trader)} href={`/portfolio/${r.trader}`} />
+                  </td>
+                  <td className="tnum">{r.qty.toString()}</td>
+                  <td className="tnum">{trim(r.eth)}</td>
+                  <td className="tnum text-[var(--muted)]">{r.ts ? ago(r.ts) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ago(ts: number): string {
+  const s = Math.max(0, Math.floor(Date.now() / 1000) - ts);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  return `${Math.floor(s / 86400)}d`;
 }
 
 /** SVG of the linear bonding curve (price vs supply) with the current point marked. */
